@@ -1,1 +1,1 @@
-# -eks-blueprints-workshop-gitops-platform
+# eks-blueprints-workshop-gitops-platform
