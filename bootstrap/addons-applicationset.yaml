@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-addons
+  namespace: argocd
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            fleet_member: control-plane
+        values:
+          addonChart: gitops-bridge
+  template:
+    metadata:
+      name: cluster-addons
+      finalizers:
+        # This is here only for workshop purposes. In a real-world scenario, you should not use this
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      sources:
+        - ref: values
+          repoURL: "https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-addons"
+          targetRevision: "HEAD"
+        - repoURL: "https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-addons"
+          path: "charts/{{.values.addonChart}}"
+          targetRevision: "HEAD"
+          helm:
+            valuesObject:
+              #selectorMatchLabels:
+              #  fleet_member: control-plane
+            ignoreMissingValueFiles: true
+            valueFiles:
+              - "$values/default/addons/{{.values.addonChart}}/values.yaml"
+              - "$values/environments/{{.metadata.labels.environment}}/addons/{{.values.addonChart}}/values.yaml"
+              - "$values/clusters/{{.name}}/addons/{{.values.addonChart}}/values.yaml"
+              - "$values/tenants/{{.metadata.labels.tenant}}/default/addons/{{.values.addonChart}}/values.yaml"
+              - "$values/tenants/{{.metadata.labels.tenant}}/environments/{{.metadata.labels.environment}}/addons/{{.values.addonChart}}/values.yaml"
+              - "$values/tenants/{{.metadata.labels.tenant}}/clusters/{{.name}}/addons/{{.values.addonChart}}/values.yaml"
+      destination:
+        namespace: argocd
+        name: "{{.name}}"
+      syncPolicy:
+        automated:
+          selfHeal: false
+          allowEmpty: true
+          prune: false
+        retry:
+          limit: 100
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true # Big CRDs.
