@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: namespace
+  namespace: argocd
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: control-plane
+          - git:
+              repoURL: 'https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-platform'
+              revision: 'HEAD'
+              directories:
+                - path: 'config/workload/*'
+  template:
+    metadata:
+      name: 'namespace-{{path.basename}}'
+      labels:
+        environment: '{{metadata.labels.environment}}'
+        tenant: '{{path.basename}}'
+        workloads: 'true'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-platform'
+        path: '{{path}}/namespace'
+        targetRevision: 'HEAD'
+      destination:
+        name: '{{name}}'
+      syncPolicy:
+        automated:
+          allowEmpty: true
+        retry:
+          backoff:
+            duration: 1m
+            #limit: 100
+        syncOptions:
+          - CreateNamespace=true
