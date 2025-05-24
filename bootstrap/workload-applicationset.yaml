@@ -14,8 +14,8 @@ spec:
                 matchLabels:
                   environment: 'control-plane'
           - git:
-              repoURL: 'https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-platform'
-              revision: 'HEAD'
+              repoURL: '{{metadata.annotations.platform_repo_url}}'
+              revision: '{{metadata.annotations.platform_repo_revision}}'
               directories:
                 - path: 'config/workload/*'
   template:
@@ -26,9 +26,9 @@ spec:
     spec:
       project: default
       source:
-        repoURL: 'https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-platform'
+        repoURL: '{{metadata.annotations.platform_repo_url}}'
         path: '{{path}}/workload'
-        targetRevision: 'HEAD'
+        targetRevision: '{{metadata.annotations.platform_repo_revision}}'
       destination:
         name: '{{name}}'
       syncPolicy:

@@ -26,11 +26,11 @@ spec:
       project: default
       sources:
         - ref: values
-          repoURL: "https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-addons"
-          targetRevision: "HEAD"
-        - repoURL: "https://github.com/chauhangarima1808/eks-blueprints-workshop-gitops-addons"
+          repoURL: '{{metadata.annotations.addons_repo_url}}'
+          targetRevision: '{{metadata.annotations.addons_repo_revision}}'
+        - repoURL: '{{metadata.annotations.addons_repo_url}}'
           path: "charts/{{.values.addonChart}}"
-          targetRevision: "HEAD"
+          targetRevision: '{{metadata.annotations.addons_repo_revision}}'
           helm:
             valuesObject:
               #selectorMatchLabels:
